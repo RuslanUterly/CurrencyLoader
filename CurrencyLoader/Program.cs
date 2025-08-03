@@ -1,17 +1,26 @@
 ﻿using CurrencyLoader;
+using CurrencyLoader.Extensions;
 using CurrencyLoader.Infrastucture;
 using CurrencyLoader.Models;
 using CurrencyLoader.Services;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 var services = new ServiceCollection();
-Startup.ConfigureServices(services);
+
+IConfiguration configuration = services.AddConfiguration();
+
+services.ConfigureDbContext(configuration);
+services.ConfigureServices(configuration);
+services.AddLogging();
+
 await using ServiceProvider provider = services.BuildServiceProvider();
     
 var currencyService = provider.GetRequiredService<CurrencyService>();
 var databaseService = provider.GetRequiredService<DatabaseService>();
+var dbInitializer = provider.GetRequiredService<DbInitializer>();
     
-await databaseService.InitializeDatabase();
+await dbInitializer.InitializeDatabase();
     
 DateTime endDate = DateTime.Today;
 DateTime startDate = endDate.AddMonths(-1);

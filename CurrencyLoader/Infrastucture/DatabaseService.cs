@@ -6,57 +6,28 @@ namespace CurrencyLoader.Infrastucture;
 
 public class DatabaseService
 {
-    private readonly string _connectionString;
+    private readonly NpgsqlDataSource _dataSource;
     
-    public DatabaseService(string connectionString)
+    public DatabaseService(NpgsqlDataSource dataSource)
     {
-        _connectionString = connectionString;
-    }
-    
-    public async Task InitializeDatabase()
-    {
-        using NpgsqlConnection connection = new(_connectionString);
-        await connection.OpenAsync();
-    
-        string createTablesSql = @"
-            CREATE TABLE IF NOT EXISTS currencies (
-                id SERIAL PRIMARY KEY,
-                code VARCHAR(10) UNIQUE NOT NULL,
-                name VARCHAR(100) NOT NULL
-            );
-
-            CREATE TABLE IF NOT EXISTS exchange_rates (
-                id SERIAL PRIMARY KEY,
-                currency_id INTEGER NOT NULL REFERENCES currencies(id),
-                date DATE NOT NULL,
-                value NUMERIC(10,4) NOT NULL
-            );
-
-            CREATE UNIQUE INDEX IF NOT EXISTS
-                idx_exchange_rates_currency_date
-            ON exchange_rates(currency_id, date);
-        ";
-    
-        await using NpgsqlCommand command = new(createTablesSql, connection);
-        await command.ExecuteNonQueryAsync();
+        _dataSource = dataSource;
     }
     
     public async Task<bool> IsDataExistForDate(DateTime date)
     {
-        using var connection = new NpgsqlConnection(_connectionString);
-        await connection.OpenAsync();
-    
         const string sql = "SELECT EXISTS(SELECT 1 FROM exchange_rates WHERE date = @date LIMIT 1)";
-        await using var command = new NpgsqlCommand(sql, connection);
+        
+        await using NpgsqlConnection connection = await _dataSource.OpenConnectionAsync();
+        await using NpgsqlCommand command = new (sql, connection);
         command.Parameters.AddWithValue("@date", date);
         
-        return (bool)await command.ExecuteScalarAsync();
+        object? result = await command.ExecuteScalarAsync();
+        return result is bool b && b;
     }
 
     public async Task SaveExchangeRates(ValCurs data, DateTime date)
     {
-        using NpgsqlConnection connection = new(_connectionString);
-        await connection.OpenAsync();
+        await using NpgsqlConnection connection = await _dataSource.OpenConnectionAsync();
         using NpgsqlTransaction transaction = await connection.BeginTransactionAsync();
 
         try
@@ -84,14 +55,19 @@ public class DatabaseService
         findCommand.Parameters.AddWithValue("@code", valute.CharCode);
     
         object? existingId = await findCommand.ExecuteScalarAsync();
-        if (existingId != null) return (int)existingId;
+        
+        if (existingId != null && existingId is int id)
+        {
+            return id;
+        }
     
         string insertSql = "INSERT INTO currencies (code, name) VALUES (@code, @name) RETURNING id";
         await using NpgsqlCommand insertCommand = new NpgsqlCommand(insertSql, connection, transaction);
         insertCommand.Parameters.AddWithValue("@code", valute.CharCode);
         insertCommand.Parameters.AddWithValue("@name", valute.Name);
     
-        return (int)await insertCommand.ExecuteScalarAsync();
+        object? result = await insertCommand.ExecuteScalarAsync();
+        return Convert.ToInt32(result);
     }
     
     private async Task InsertExchangeRate(
@@ -104,9 +80,9 @@ public class DatabaseService
         decimal value = decimal.Parse(valute.Value, CultureInfo.GetCultureInfo("ru-RU"));
     
         string sql = @"
-        INSERT INTO exchange_rates (currency_id, date, value)
-        VALUES (@currencyId, @date, @value)
-        ON CONFLICT (currency_id, date) DO NOTHING";
+            INSERT INTO exchange_rates (currency_id, date, value)
+            VALUES (@currencyId, @date, @value)
+            ON CONFLICT (currency_id, date) DO NOTHING";
     
         await using var command = new NpgsqlCommand(sql, connection, transaction);
         command.Parameters.AddWithValue("@currencyId", currencyId);
