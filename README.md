@@ -1,4 +1,4 @@
-<h1>Тестовое задание</h1>
+<h1>Приложение CurrencyLoader (.NET 8 + PostgreSQL)</h1>
 
 В качестве БД используется PostgreSQL. 
 Так как в основном проекте нет EF Core и Dapper было решено использовать "Чистый SQL" и паттерны UnitOfWork и Repository
