@@ -4,5 +4,5 @@ namespace CurrencyLoader.Services.Interfaces;
 
 public interface ICurrencyService
 {
-    Task<ValCurs?> GetExchangeRatesAsync(DateTime date);
+    Task<ValCurs?> GetExchangeRatesAsync(DateTime date, CancellationToken ct);
 }

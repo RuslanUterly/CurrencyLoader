@@ -1,5 +1,5 @@
 ﻿using CurrencyLoader.Extensions;
-using CurrencyLoader.Infrastucture;
+using CurrencyLoader.Infrastructure;
 using CurrencyLoader.Services.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -22,4 +22,4 @@ await dbInitializer.InitializeDatabase();
 DateTime endDate = DateTime.Today;
 DateTime startDate = endDate.AddMonths(-1);
 
-await importer.ImportAsync(startDate, endDate);
+await importer.ImportAsync(startDate, endDate, CancellationToken.None);

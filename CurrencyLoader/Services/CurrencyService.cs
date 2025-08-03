@@ -21,7 +21,7 @@ public class CurrencyService : ICurrencyService
         _clientFactory = clientFactory;
     }
     
-    public async Task<ValCurs?> GetExchangeRatesAsync(DateTime date)
+    public async Task<ValCurs?> GetExchangeRatesAsync(DateTime date, CancellationToken ct = default)
     {
         try
         {
