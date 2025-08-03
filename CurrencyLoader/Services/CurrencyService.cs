@@ -2,12 +2,13 @@ using System.Text;
 using System.Xml.Serialization;
 using CurrencyLoader.Models;
 using CurrencyLoader.Models.Options;
+using CurrencyLoader.Services.Interfaces;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace CurrencyLoader.Services;
 
-public class CurrencyService
+public class CurrencyService : ICurrencyService
 {
     private readonly IHttpClientFactory _clientFactory;
     private readonly IOptions<CbrOptions> _options;
@@ -20,7 +21,7 @@ public class CurrencyService
         _clientFactory = clientFactory;
     }
     
-    public async Task<ValCurs?> GetExchangeRates(DateTime date)
+    public async Task<ValCurs?> GetExchangeRatesAsync(DateTime date)
     {
         try
         {

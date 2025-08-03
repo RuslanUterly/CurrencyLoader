@@ -2,6 +2,7 @@ using System.Text;
 using CurrencyLoader.Infrastucture;
 using CurrencyLoader.Models.Options;
 using CurrencyLoader.Services;
+using CurrencyLoader.Services.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -36,7 +37,8 @@ public static class Startup
         
         services.AddHttpClient<CurrencyService>();
         
-        services.AddScoped<CurrencyService>();
+        services.AddScoped<IExchangeRateImporter, ExchangeRateImporter>();
+        services.AddScoped<ICurrencyService, CurrencyService>();
     }
     
     public static IConfiguration AddConfiguration(this IServiceCollection services)
