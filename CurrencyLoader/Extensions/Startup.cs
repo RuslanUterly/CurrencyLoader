@@ -21,7 +21,7 @@ public static class Startup
     {
         services.AddSingleton<NpgsqlDataSource>(sp =>
         {
-            var connectionString = configuration.GetValue<string>("ConnectionStrings:CurrencyDb");
+            var connectionString = configuration.GetConnectionString("CurrencyDb");
             
             return new NpgsqlDataSourceBuilder(connectionString)
                 .UseLoggerFactory(sp.GetRequiredService<ILoggerFactory>())
@@ -57,6 +57,7 @@ public static class Startup
             .SetBasePath(projectRoot)
             .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
             .AddUserSecrets<Program>()
+            .AddEnvironmentVariables()  
             .Build();
     
         services.AddSingleton(configuration);
