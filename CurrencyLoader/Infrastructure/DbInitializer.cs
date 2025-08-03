@@ -1,6 +1,6 @@
 using Npgsql;
 
-namespace CurrencyLoader.Infrastucture;
+namespace CurrencyLoader.Infrastructure;
 
 public class DbInitializer
 {

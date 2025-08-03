@@ -1,8 +1,6 @@
-﻿using CurrencyLoader;
-using CurrencyLoader.Extensions;
-using CurrencyLoader.Infrastucture;
-using CurrencyLoader.Models;
-using CurrencyLoader.Services;
+﻿using CurrencyLoader.Extensions;
+using CurrencyLoader.Infrastructure;
+using CurrencyLoader.Services.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -16,22 +14,12 @@ services.AddLogging();
 
 await using ServiceProvider provider = services.BuildServiceProvider();
     
-var currencyService = provider.GetRequiredService<CurrencyService>();
-var databaseService = provider.GetRequiredService<DatabaseService>();
+var importer = provider.GetRequiredService<IExchangeRateImporter>();
 var dbInitializer = provider.GetRequiredService<DbInitializer>();
     
 await dbInitializer.InitializeDatabase();
     
 DateTime endDate = DateTime.Today;
 DateTime startDate = endDate.AddMonths(-1);
-    
-for (DateTime date = startDate; date <= endDate; date = date.AddDays(1))
-{
-    if (await databaseService.IsDataExistForDate(date)) continue;
-        
-    ValCurs? exchangeRates = await currencyService.GetExchangeRates(date);
-    if (exchangeRates != null)
-    {
-        await databaseService.SaveExchangeRates(exchangeRates, date);
-    }
-}
+
+await importer.ImportAsync(startDate, endDate, CancellationToken.None);

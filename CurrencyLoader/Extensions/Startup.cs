@@ -1,7 +1,13 @@
 using System.Text;
-using CurrencyLoader.Infrastucture;
+using CurrencyLoader.Infrastructure;
+using CurrencyLoader.Infrastructure.Interfaces;
+using CurrencyLoader.Infrastructure.Interfaces.Repository;
+using CurrencyLoader.Infrastructure.Repository;
+using CurrencyLoader.Infrastructure.UnitOfWork;
+using CurrencyLoader.Infrastructure.UnitOfWork.Interfaces;
 using CurrencyLoader.Models.Options;
 using CurrencyLoader.Services;
+using CurrencyLoader.Services.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -23,7 +29,10 @@ public static class Startup
                 .Build();
         });
         
-        services.AddScoped<DatabaseService>();
+        services.AddSingleton<IUnitOfWorkFactory, NpgsqlUnitOfWorkFactory>();
+        services.AddTransient<IExchangeRateSaver, ExchangeRateSaver>();
+        services.AddTransient<IExchangeRateChecker, ExchangeRateChecker>();
+        
         services.AddScoped<DbInitializer>();
     }
     
@@ -36,7 +45,8 @@ public static class Startup
         
         services.AddHttpClient<CurrencyService>();
         
-        services.AddScoped<CurrencyService>();
+        services.AddScoped<IExchangeRateImporter, ExchangeRateImporter>();
+        services.AddScoped<ICurrencyService, CurrencyService>();
     }
     
     public static IConfiguration AddConfiguration(this IServiceCollection services)
