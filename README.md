@@ -9,14 +9,14 @@
 <li>Использовать UserSecrets, чтобы не показывать реальные строки подключения к БД</li>
 
 <h3>Запуск и отладка Docker для Rider</h3>
-Сначала выполнить команду: docker compose down -v
-Следующий шаг это перейти в DockerFile и раскоментировать нужную строчку
+<div>Сначала выполнить команду: docker compose down -v </div>
+<div>Следующий шаг это перейти в DockerFile и раскоментировать нужную строчку </div>
 <img width="716" height="249" alt="image" src="https://github.com/user-attachments/assets/7fa35453-6843-4aa4-a152-8e05b8bc8851" />
 <div>Затем необходимо перейти в файл compose.yaml и выполнить его после чего появится контейнер и возможность выбрать в качестве запуска и дебага docker-compose</div>
 
 <h3>Запуск и отладка Docker для VisalStudio</h3>
-Сначала выполнить команду: docker compose down -v
-Следующий шаг это перейти в DockerFile и раскоментировать нужную строчку
+<div>Сначала выполнить команду: docker compose down -v </div>
+<div>Следующий шаг это перейти в DockerFile и раскоментировать нужную строчку </div>
 <img width="716" height="249" alt="image" src="https://github.com/user-attachments/assets/7fa35453-6843-4aa4-a152-8e05b8bc8851" />
 <div>Затем необходимо дебаге запустить docker-compose</div>
 
