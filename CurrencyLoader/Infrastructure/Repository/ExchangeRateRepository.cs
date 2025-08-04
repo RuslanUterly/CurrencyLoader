@@ -20,7 +20,7 @@ public class ExchangeRateRepository : IExchangeRateRepository
         await using NpgsqlCommand command = new NpgsqlCommand(sql, _unitOfWork.Connection);
         command.Parameters.AddWithValue("@date", date);
         
-        object? result = await command.ExecuteScalarAsync(ct).ConfigureAwait(false);
+        object? result = await command.ExecuteScalarAsync(ct);
         return result is bool ok && ok;
     }
 

@@ -28,6 +28,7 @@ public class ExchangeRateSaver : IExchangeRateSaver
             
             foreach (Valute valute in data.Valutes)
             {
+                // Get the currency ID by code or add a new one if it is not found
                 int id = await currencyRepository.GetIdByCodeAsync(valute.CharCode, ct)
                     ?? await currencyRepository.AddAsync(valute.CharCode, valute.Name, ct);
 

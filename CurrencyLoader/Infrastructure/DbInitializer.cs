@@ -2,6 +2,9 @@ using Npgsql;
 
 namespace CurrencyLoader.Infrastructure;
 
+/// <summary>
+/// Initializing the database: creating the necessary tables and indexes if they do not already exist.
+/// </summary>
 public class DbInitializer
 {
     private readonly NpgsqlDataSource _dataSource;
@@ -11,6 +14,12 @@ public class DbInitializer
         _dataSource = dataSource;
     }
     
+    /// <summary>
+    /// Initializes the database structure:
+    /// - Creates a currency table (currencies)
+    /// - Creates a currency rate table (exchange_rates)
+    /// - Creates a unique index on the exchange_rates table for the pair (currency_id, date)
+    /// </summary>
     public async Task InitializeDatabase()
     {
         string createTablesSql = @"
