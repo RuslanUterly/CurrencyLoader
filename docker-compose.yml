@@ -1,0 +1,31 @@
+version: '3.8'
+services:
+  db:
+    image: postgres:17
+    container_name: currency_db
+    environment:
+      POSTGRES_DB: currency
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    command: >
+      postgres -c listen_addresses='*'
+  
+  app:
+    build:
+      context: .
+      dockerfile: CurrencyLoader/Dockerfile
+    container_name: currency_loader
+    depends_on:
+      - db
+    environment:
+      ConnectionStrings__CurrencyDb: "Host=db;Port=5432;Database=currency;Username=postgres;Password=admin;"
+    volumes:
+      - ./logs:/app/logs
+    restart: unless-stopped
+
+volumes:
+  pgdata:
