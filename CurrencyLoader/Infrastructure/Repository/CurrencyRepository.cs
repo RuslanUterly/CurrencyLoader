@@ -20,7 +20,7 @@ public class CurrencyRepository : ICurrencyRepository
         await using NpgsqlCommand command = new NpgsqlCommand(sql, _unitOfWork.Connection, _unitOfWork.Transaction);
         command.Parameters.AddWithValue("@code", code);
         
-        object? result = await command.ExecuteScalarAsync(ct).ConfigureAwait(false);
+        object? result = await command.ExecuteScalarAsync(ct);
         return result is int id ? id : null;
     }
 
@@ -32,7 +32,7 @@ public class CurrencyRepository : ICurrencyRepository
         cmd.Parameters.AddWithValue("@code", code);
         cmd.Parameters.AddWithValue("@name", name);
         
-        object? result = await cmd.ExecuteScalarAsync(ct).ConfigureAwait(false);
+        object? result = await cmd.ExecuteScalarAsync(ct);
         return Convert.ToInt32(result);
     }
 }

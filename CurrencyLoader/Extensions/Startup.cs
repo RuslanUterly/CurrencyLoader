@@ -1,8 +1,6 @@
 using System.Text;
 using CurrencyLoader.Infrastructure;
 using CurrencyLoader.Infrastructure.Interfaces;
-using CurrencyLoader.Infrastructure.Interfaces.Repository;
-using CurrencyLoader.Infrastructure.Repository;
 using CurrencyLoader.Infrastructure.UnitOfWork;
 using CurrencyLoader.Infrastructure.UnitOfWork.Interfaces;
 using CurrencyLoader.Models.Options;

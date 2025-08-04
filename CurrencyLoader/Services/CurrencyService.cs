@@ -29,12 +29,14 @@ public class CurrencyService : ICurrencyService
             HttpClient client = _clientFactory.CreateClient();
             
             HttpResponseMessage response = await client.GetAsync(
-                $"{_options.Value.BaseUrl.Replace("{date}", formattedDate)}");
+                $"{_options.Value.BaseUrl.Replace("{date}", formattedDate)}", ct);
         
             if (!response.IsSuccessStatusCode) return null;
         
-            var data = await response.Content.ReadAsByteArrayAsync();
+            // Decode the byte array using Windows-1251 encoding (required for CBR XML)
+            var data = await response.Content.ReadAsByteArrayAsync(ct);
             var xmlContent = Encoding.GetEncoding("windows-1251").GetString(data);
+            
             return ParseXmlResponse(xmlContent);
         }
         catch (Exception ex)
