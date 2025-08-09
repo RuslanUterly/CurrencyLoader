@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Xml.Serialization;
 
 namespace CurrencyLoader.Models;
@@ -20,5 +21,47 @@ public class Valute
     public string Name { get; set; }
     
     [XmlElement("Value")]
-    public string Value { get; set; }
+    public string ValueString { get; set; }
+    
+    [XmlElement("VunitRate")]
+    public string VunitRateString { get; set; }
+    
+    [XmlIgnore]
+    public decimal Value
+    {
+        get
+        {
+            return decimal.Parse(ValueString, NumberStyles.Any, CultureInfo.GetCultureInfo("ru-RU"));
+        }
+        set
+        {
+            ValueString = value.ToString(CultureInfo.GetCultureInfo("ru-RU"));
+        }
+    }
+    
+    [XmlIgnore]
+    public decimal VunitRate
+    {
+        get
+        {
+            // Exponential notation processing (2,22616E-05)
+            if (VunitRateString.Contains("E") || VunitRateString.Contains("e"))
+            {
+                if (double.TryParse(
+                        VunitRateString.Replace(',', '.'), 
+                        NumberStyles.Any, 
+                        CultureInfo.InvariantCulture, 
+                        out double result))
+                {
+                    return (decimal)result;
+                }
+            }
+            
+            // Regular format processing
+            return decimal.Parse(
+                VunitRateString, 
+                NumberStyles.Any, 
+                CultureInfo.GetCultureInfo("ru-RU"));
+        }
+    }
 }

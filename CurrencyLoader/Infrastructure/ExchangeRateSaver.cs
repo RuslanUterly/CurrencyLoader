@@ -1,4 +1,3 @@
-using System.Globalization;
 using CurrencyLoader.Infrastructure.Interfaces;
 using CurrencyLoader.Infrastructure.Interfaces.Repository;
 using CurrencyLoader.Infrastructure.Repository;
@@ -25,15 +24,14 @@ public class ExchangeRateSaver : IExchangeRateSaver
         try
         {
             await unitOfWork.BeginTransactionAsync(ct);
-            
+
             foreach (Valute valute in data.Valutes)
             {
                 // Get the currency ID by code or add a new one if it is not found
                 int id = await currencyRepository.GetIdByCodeAsync(valute.CharCode, ct)
-                    ?? await currencyRepository.AddAsync(valute.CharCode, valute.Name, ct);
+                         ?? await currencyRepository.AddAsync(valute.CharCode, valute.Name, ct);
 
-                decimal value = decimal.Parse(valute.Value, CultureInfo.GetCultureInfo("ru-RU"));
-                await exchangeRateRepository.AddAsync(id, date, value, ct);
+                await exchangeRateRepository.AddAsync(id, date, valute.Nominal, valute.Value, valute.VunitRate, ct);
             }
 
             await unitOfWork.CommitAsync(ct);

@@ -24,17 +24,19 @@ public class ExchangeRateRepository : IExchangeRateRepository
         return result is bool ok && ok;
     }
 
-    public async Task AddAsync(int currencyId, DateTime date, decimal value, CancellationToken ct = default)
+    public async Task AddAsync(int currencyId, DateTime date, int nominal, decimal value, decimal vunitRate, CancellationToken ct = default)
     {
         const string sql = @"
-            INSERT INTO exchange_rates (currency_id, date, value)
-            VALUES (@currencyId, @date, @value)
+            INSERT INTO exchange_rates (currency_id, date, nominal, value, vunit_rate)
+            VALUES (@currencyId, @date, @nominal, @value, @vunitRate)
             ON CONFLICT (currency_id, date) DO NOTHING";
         
         await using NpgsqlCommand command = new NpgsqlCommand(sql, _unitOfWork.Connection, _unitOfWork.Transaction);
         command.Parameters.AddWithValue("@currencyId", currencyId);
         command.Parameters.AddWithValue("@date", date);
+        command.Parameters.AddWithValue("@nominal", nominal);
         command.Parameters.AddWithValue("@value", value);
+        command.Parameters.AddWithValue("@vunitRate", vunitRate);
         
         await command.ExecuteNonQueryAsync(ct);
     }
