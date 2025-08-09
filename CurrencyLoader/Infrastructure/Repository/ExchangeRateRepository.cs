@@ -4,6 +4,9 @@ using Npgsql;
 
 namespace CurrencyLoader.Infrastructure.Repository;
 
+/// <summary>
+/// Repository for accessing and managing exchange rate records in a PostgreSQL database.
+/// </summary>
 public class ExchangeRateRepository : IExchangeRateRepository
 {
     private readonly IUnitOfWork _unitOfWork;
@@ -13,6 +16,7 @@ public class ExchangeRateRepository : IExchangeRateRepository
         _unitOfWork = unitOfWork;
     }
 
+    /// <inheritdoc/>
     public async Task<bool> ExistsByDateAsync(DateTime date, CancellationToken ct = default)
     {
         const string sql = "SELECT EXISTS (SELECT 1 FROM exchange_rates WHERE date = @date)";
@@ -23,7 +27,8 @@ public class ExchangeRateRepository : IExchangeRateRepository
         object? result = await command.ExecuteScalarAsync(ct);
         return result is bool ok && ok;
     }
-
+    
+    /// <inheritdoc/>
     public async Task AddAsync(int currencyId, DateTime date, int nominal, decimal value, decimal vunitRate, CancellationToken ct = default)
     {
         const string sql = @"
