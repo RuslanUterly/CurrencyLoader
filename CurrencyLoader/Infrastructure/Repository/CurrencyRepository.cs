@@ -4,6 +4,9 @@ using Npgsql;
 
 namespace CurrencyLoader.Infrastructure.Repository;
 
+/// <summary>
+/// Repository for accessing and managing currency records in a PostgreSQL database.
+/// </summary>
 public class CurrencyRepository : ICurrencyRepository
 {
     private readonly IUnitOfWork _unitOfWork;
@@ -13,6 +16,7 @@ public class CurrencyRepository : ICurrencyRepository
         _unitOfWork = unitOfWork;
     }
 
+    /// <inheritdoc/>
     public async Task<int?> GetIdByCodeAsync(string code, CancellationToken ct = default)
     {
         const string sql = "SELECT id FROM currencies WHERE code = @code LIMIT 1";
@@ -24,6 +28,7 @@ public class CurrencyRepository : ICurrencyRepository
         return result is int id ? id : null;
     }
 
+    /// <inheritdoc/>
     public async Task<int> AddAsync(string code, string name, CancellationToken ct = default)
     {
         const string sql = "INSERT INTO currencies (code, name) VALUES (@code, @name) RETURNING id";

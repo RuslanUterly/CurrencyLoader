@@ -16,9 +16,9 @@ public class DbInitializer
     
     /// <summary>
     /// Initializes the database structure:
-    /// - Creates a currency table (currencies)
-    /// - Creates a currency rate table (exchange_rates)
-    /// - Creates a unique index on the exchange_rates table for the pair (currency_id, date)
+    /// <div>- Creates a currency table (currencies)</div>
+    /// <div>- Creates a currency rate table (exchange_rates)</div>
+    /// <div>- Creates a unique index on the exchange_rates table for the pair (currency_id, date)</div>
     /// </summary>
     public async Task InitializeDatabase()
     {
