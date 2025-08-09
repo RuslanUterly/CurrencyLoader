@@ -10,6 +10,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Npgsql;
+using Quartz;
 
 namespace CurrencyLoader.Extensions;
 
@@ -45,21 +46,22 @@ public static class Startup
         
         services.AddScoped<IExchangeRateImporter, ExchangeRateImporter>();
         services.AddScoped<ICurrencyService, CurrencyService>();
+        services.AddScoped<ExchangeImportJob>();
     }
-    
-    public static IConfiguration AddConfiguration(this IServiceCollection services)
+
+    public static void ConfigureQuartz(this IServiceCollection services, IConfiguration configuration)
     {
-        var projectRoot = Directory.GetParent(AppContext.BaseDirectory)?.Parent?.Parent?.Parent?.FullName!;
+        services.AddQuartz(q =>
+        {
+            var jobKey = new JobKey("ExchangeImportJob");
+            q.AddJob<ExchangeImportJob>(opts => opts.WithIdentity(jobKey));
+
+            q.AddTrigger(opts => opts
+                .ForJob(jobKey)
+                .WithIdentity("ExchangeImportTrigger")
+                .WithCronSchedule(configuration["Import:Cron"]));
+        });
         
-        IConfiguration configuration = new ConfigurationBuilder()
-            .SetBasePath(projectRoot)
-            .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-            .AddUserSecrets<Program>()
-            .AddEnvironmentVariables()  
-            .Build();
-    
-        services.AddSingleton(configuration);
-        
-        return configuration;
+        services.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);
     }
 }
