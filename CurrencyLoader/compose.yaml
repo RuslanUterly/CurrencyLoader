@@ -1,33 +1,61 @@
-﻿version: '3.8'
+version: '3.8'
+
 services:
   db:
     image: postgres:17
     container_name: currency_db
     environment:
-      POSTGRES_DB: currency
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     command: >
       postgres -c listen_addresses='*'
-  
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+    env_file:
+      - .env
+
   app:
     build:
       context: .
       dockerfile: Dockerfile
     container_name: currency_loader
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     environment:
-      ConnectionStrings__CurrencyDb: "Host=db;Port=5432;Database=currency;Username=postgres;Password=admin;"
+      ConnectionStrings__CurrencyDb: "Host=db;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD};"
       DOTNET_SYSTEM_NET_DISABLEIPV6: "1"
-      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Production}
     volumes:
       - ./logs:/app/logs
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/health"] # Замените на ваш health endpoint
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
     restart: unless-stopped
+    env_file:
+      - .env
+
+networks:
+  app-network:
+    driver: bridge
 
 volumes:
   pgdata:
+    driver: local
