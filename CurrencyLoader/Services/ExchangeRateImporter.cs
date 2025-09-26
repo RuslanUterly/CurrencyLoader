@@ -12,16 +12,14 @@ namespace CurrencyLoader.Services;
 public class ExchangeRateImporter : IExchangeRateImporter
 {
     private readonly ICurrencyService _currencyService;
-    private readonly IExchangeRateChecker _checker;
-    private readonly IExchangeRateSaver _saver;
+    private readonly IDatabaseService _databaseService;
     private readonly ILogger<ExchangeRateImporter> _logger;
 
-    public ExchangeRateImporter(ICurrencyService currencyService, ILogger<ExchangeRateImporter> logger, IExchangeRateSaver saver, IExchangeRateChecker checker)
+    public ExchangeRateImporter(ICurrencyService currencyService, ILogger<ExchangeRateImporter> logger, IDatabaseService databaseService)
     {
         _currencyService = currencyService;
         _logger = logger;
-        _saver = saver;
-        _checker = checker;
+        _databaseService = databaseService;
     }
     
     /// <summary>
@@ -35,9 +33,9 @@ public class ExchangeRateImporter : IExchangeRateImporter
     /// </returns>
     /// <remarks>
     /// For each date in the range the method:
-    /// 1. Uses <see cref="_checker"/> to determine whether rates for the date already exist and skips the date when they do.
+    /// 1. Uses <see cref="_databaseService"/> to determine whether rates for the date already exist and skips the date when they do.
     /// 2. Calls <see cref="_currencyService"/> to retrieve <see cref="ValCurs"/> for the date.
-    /// 3. If rates are returned, calls <see cref="_saver"/> to persist them.
+    /// 3. If rates are returned, calls <see cref="_databaseService"/> to persist them.
     /// </remarks>
     public async Task ImportAsync(DateTime startDate, DateTime endDate, CancellationToken ct = default)
     {
@@ -45,16 +43,12 @@ public class ExchangeRateImporter : IExchangeRateImporter
         {
             for (DateTime date = startDate; date <= endDate; date = date.AddDays(1))
             {
-                if (await _checker.CheckAsync(date, ct))
-                {
-                    continue;
-                }
-        
+                if (await _databaseService.IsDataExistByDateAsync(date, ct)) continue;
+
                 ValCurs? exchangeRates = await _currencyService.GetExchangeRatesAsync(date, ct);
-                
                 if (exchangeRates != null)
                 {
-                    await _saver.SaveAsync(exchangeRates, date, ct);
+                    await _databaseService.SaveExchangeRatesAsync(exchangeRates, date, ct);
                 }
             }
         }
